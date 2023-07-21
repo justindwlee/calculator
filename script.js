@@ -20,18 +20,20 @@ const resultPart = document.querySelector('#result-part');
 
 const numberButtons = document.querySelectorAll('.number-button');
 
-numberButtons.forEach((button) => {
-    button.addEventListener('click', function(){
-        if (resultPart.textContent !== '0') {
-            screenDisplayPart.textContent = '0';
-            resultPart.textContent = '0';
-        }
+function addToDisplay(event) {
+    if (resultPart.textContent !== '0') {
+        screenDisplayPart.textContent = '0';
+        resultPart.textContent = '0';
+    }
 
-        if(screenDisplayPart.textContent == '0')
-            screenDisplayPart.textContent = button.textContent;
-        else
-            screenDisplayPart.textContent += button.textContent;
-    })
+    if(screenDisplayPart.textContent == '0')
+    screenDisplayPart.textContent = event.target.textContent;
+else
+    screenDisplayPart.textContent += event.target.textContent;
+}
+
+numberButtons.forEach((button) => {
+    button.addEventListener('click', addToDisplay)
 })
 
 //Making the operator buttons work
@@ -122,6 +124,8 @@ allClearButton.addEventListener('click', function(){
 const clearButton = document.querySelector('#clear');
 
 clearButton.addEventListener('click', function(){
+    if (screenDisplayPart.textContent == '0')
+        return;
     let expressionToArray = screenDisplayPart.textContent.split('');
     expressionToArray.pop();
     screenDisplayPart.textContent = expressionToArray.join('');
@@ -129,14 +133,15 @@ clearButton.addEventListener('click', function(){
 })
 
 
-//Dealing with the displayed expression and getting the result
+//Making the '=' button work
+//convert it into a postfix expression and calculate it
 
 function combineDigits(arr) {
     const result = [];
     let currentNumber = "";
 
     for (const item of arr) {
-        if (!isNaN(Number(item)) || item == '.')
+        if (!isNaN(Number(item)) || item == '.' || arr.indexOf(item) == 0)
             currentNumber += item;
         else {
             if (currentNumber !== "") {
@@ -224,3 +229,43 @@ function calculate() {
 
 const equalsButton = document.querySelector('#equals');
 equalsButton.addEventListener("click", calculate);
+
+//Adding keyboard support
+
+document.addEventListener('keydown', function(event) {
+    console.log(event.key);
+    numberButtons.forEach(button => {
+        if (event.key == button.textContent)
+            button.click();
+    })
+
+    operatorButtons.forEach(button => {
+        if (event.key == button.textContent)
+            button.click();
+    })
+
+    if (event.key == '*')
+        document.querySelector('#multiplier').click();
+
+    if (event.key == '/') {
+        document.querySelector('#division').click();
+    }
+
+    if (event.key == '^')
+        document.querySelector('#exponential').click();
+0
+    if (event.key == '.')
+        document.querySelector('#decimal').click();
+121
+    if (event.key == 'Escape')
+        document.querySelector('#all-clear').click();
+
+    if (event.key == 'Backspace')
+        document.querySelector('#clear').click();
+
+    if (event.key == 'Enter') {
+        event.preventDefault();
+        document.querySelector('#equals').click();
+    }
+})
+

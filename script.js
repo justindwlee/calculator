@@ -22,6 +22,11 @@ const numberButtons = document.querySelectorAll('.number-button');
 
 numberButtons.forEach((button) => {
     button.addEventListener('click', function(){
+        if (resultPart.textContent !== '0') {
+            screenDisplayPart.textContent = '0';
+            resultPart.textContent = '0';
+        }
+
         if(screenDisplayPart.textContent == '0')
             screenDisplayPart.textContent = button.textContent;
         else
@@ -35,6 +40,11 @@ const operatorButtons = document.querySelectorAll('.operator-button');
 
 operatorButtons.forEach((button) => {
     button.addEventListener('click', function(){
+            if (resultPart.textContent != '0') {
+                screenDisplayPart.textContent = resultPart.textContent;
+                resultPart.textContent = '0';
+            }
+
             let currentExpression = screenDisplayPart.textContent;
             let lastComponent = currentExpression.split('')[currentExpression.length-1];
             if (operators[lastComponent])
@@ -44,11 +54,52 @@ operatorButtons.forEach((button) => {
     })
 })
 
+//Making the decimal point button work
+
+function isItemRepeated(str, item) {
+    let count = 0;
+
+    for (let ch of str) {
+        if (ch === item)
+            count++;
+    }
+
+    return !(count == 0 || count == 1);
+}
+
+const decimalButton = document.querySelector('#decimal');
+
+decimalButton.addEventListener('click', function(){
+    if (resultPart.textContent != '0')
+        return;
+
+    let currentExpression = screenDisplayPart.textContent;
+    let lastComponent = currentExpression.split('')[currentExpression.length-1];
+    if (operators[lastComponent] || lastComponent == '.')
+        return;
+    else {
+        let temp = currentExpression + ".";
+        let tempTokenized = combineDigits(temp.split(''));
+        for (let token of tempTokenized) {
+            if (isItemRepeated(token, '.')) {
+                return;
+            }
+        }
+        screenDisplayPart.textContent += '.';
+    }
+})
+
 //Making the exponential button work
 
 const exponentialButton = document.querySelector('#exponential');
 
+
 exponentialButton.addEventListener('click', function(){
+    if (resultPart.textContent != '0') {
+        screenDisplayPart.textContent = resultPart.textContent;
+        resultPart.textContent = '0';
+    }
+
     let currentExpression = screenDisplayPart.textContent;
     let lastComponent = currentExpression.split('')[currentExpression.length-1];
     if (operators[lastComponent])
@@ -85,7 +136,7 @@ function combineDigits(arr) {
     let currentNumber = "";
 
     for (const item of arr) {
-        if (!isNaN(Number(item)))
+        if (!isNaN(Number(item)) || item == '.')
             currentNumber += item;
         else {
             if (currentNumber !== "") {
@@ -153,6 +204,11 @@ function evaluatePostfix(tokens) {
 
 function calculate() {
     let displayedExpression = screenDisplayPart.textContent;
+    if (displayedExpression.includes("÷0")) {
+        alert("You can't divide by 0!");
+        return;
+    }
+
     let expressionTokenized = combineDigits(displayedExpression.split(''));
 
     if (isNaN(expressionTokenized[expressionTokenized.length-1]))
@@ -160,7 +216,10 @@ function calculate() {
 
     let expressionToPostFix = infixToPostfix(expressionTokenized);
     let finalResult = evaluatePostfix(expressionToPostFix);
-    resultPart.textContent = finalResult;
+    if (Number.isInteger(finalResult))
+        resultPart.textContent = finalResult;
+    else
+        resultPart.textContent = parseFloat(finalResult.toFixed(12));
 }
 
 const equalsButton = document.querySelector('#equals');
